@@ -53,18 +53,14 @@ margin-bottom:5px;
 }
 
 .subtitle{
-margin-bottom:25px;
+margin-bottom:20px;
 font-size:14px;
 color:#666;
 }
 
-#countdownBox{
-margin-top:10px;
-}
-
-#launchText{
-font-size:18px;
-margin-bottom:10px;
+.message{
+margin:15px 0;
+font-size:16px;
 }
 
 #timer{
@@ -72,7 +68,7 @@ font-size:34px;
 font-weight:bold;
 letter-spacing:2px;
 color:#e74c3c;
-margin-bottom:20px;
+margin:15px 0;
 }
 
 .button{
@@ -92,6 +88,12 @@ transition:0.25s;
 .junior{background:#f39c12;}
 .senior{background:#e74c3c;}
 .parents{background:#8e44ad;}
+
+.disabled{
+background:#aaa !important;
+opacity:0.6;
+cursor:not-allowed;
+}
 
 .button:hover{
 transform:scale(1.04);
@@ -118,46 +120,13 @@ color:#777;
 <h1>Ramadan Quiz Competition</h1>
 <p class="subtitle">RAYYAN RAMADAN CAMPAIGN</p>
 
-<!-- Countdown Screen -->
-<div id="countdownBox">
+<div id="messageBox" class="message"></div>
+<div id="timer"></div>
 
-<div id="launchText">
-Quiz will start at <b>4:00 PM IST</b>
-</div>
-
-<div id="timer">
-Loading...
-</div>
-
-</div>
-
-<!-- Quiz Buttons (Hidden initially) -->
-<div id="quizContent" style="display:none;">
-
-<button class="button kids"
-onclick="openForm('https://forms.gle/4Gc8YQFXfLxYdQ6q8')">
-Category 01<br>(Class 1 - 4)
-</button>
-
-<button class="button junior"
-onclick="openForm('https://forms.gle/dhzeTovhiM8qvsJT7')">
-Category 02<br>(Class 5 - 7)
-</button>
-
-<button class="button senior"
-onclick="openForm('https://forms.gle/2JYeLDC9KSk3bfUP6')">
-Category 03<br>(Class 8 - 10)
-</button>
-
-<button class="button parents"
-onclick="openForm('https://forms.gle/dfezxnL9ci6AmeCSA')">
-Parents
-</button>
+<div id="buttons"></div>
 
 <div class="footer">
 Choose the correct category before starting the quiz
-</div>
-
 </div>
 
 </div>
@@ -168,33 +137,118 @@ function openForm(link){
 window.location.href = link;
 }
 
-/* SET QUIZ START TIME HERE */
-const startTime = new Date("2026-03-13T11:14:00+05:30").getTime();
+const student1="https://forms.gle/4Gc8YQFXfLxYdQ6q8";
+const student2="https://forms.gle/dhzeTovhiM8qvsJT7";
+const student3="https://forms.gle/2JYeLDC9KSk3bfUP6";
+const parents="https://forms.gle/dfezxnL9ci6AmeCSA";
 
-const timer = setInterval(function(){
+const studentsStart = new Date("2026-03-14T16:00:00+05:30").getTime();
+const studentsEnd = new Date("2026-03-14T16:20:00+05:30").getTime();
+const parentsStart = new Date("2026-03-14T16:30:00+05:30").getTime();
+const quizEnd = new Date("2026-03-14T16:50:00+05:30").getTime();
+
+function updatePage(){
 
 const now = new Date().getTime();
-const distance = startTime - now;
+const msg = document.getElementById("messageBox");
+const timer = document.getElementById("timer");
+const buttons = document.getElementById("buttons");
 
-if(distance <= 0){
+if(now < studentsStart){
 
-clearInterval(timer);
+msg.innerHTML="Quiz will start at <b>4:00 PM IST</b><br>Parents Quiz will start at <b>4:30 PM IST</b>";
 
-document.getElementById("countdownBox").style.display="none";
-document.getElementById("quizContent").style.display="block";
+let distance=studentsStart-now;
 
-return;
+showTimer(distance);
+
+buttons.innerHTML="";
 
 }
 
-const hours = Math.floor(distance/(1000*60*60));
-const minutes = Math.floor((distance%(1000*60*60))/(1000*60));
-const seconds = Math.floor((distance%(1000*60))/1000);
+else if(now >= studentsStart && now < studentsEnd){
 
-document.getElementById("timer").innerHTML =
-hours+"h "+minutes+"m "+seconds+"s";
+msg.innerHTML="";
 
-},1000);
+timer.innerHTML="";
+
+buttons.innerHTML=`
+
+<button class="button kids" onclick="openForm('${student1}')">
+Category 01<br>(Class 1 - 4)
+</button>
+
+<button class="button junior" onclick="openForm('${student2}')">
+Category 02<br>(Class 5 - 7)
+</button>
+
+<button class="button senior" onclick="openForm('${student3}')">
+Category 03<br>(Class 8 - 10)
+</button>
+
+<button class="button parents disabled">
+Parents<br>(at 4:30 PM)
+</button>
+
+`;
+
+}
+
+else if(now >= studentsEnd && now < parentsStart){
+
+msg.innerHTML="Students Quiz Time is Over<br>Parents Quiz will start in:";
+
+let distance=parentsStart-now;
+
+showTimer(distance);
+
+buttons.innerHTML="";
+
+}
+
+else if(now >= parentsStart && now < quizEnd){
+
+msg.innerHTML="";
+
+timer.innerHTML="";
+
+buttons.innerHTML=`
+
+<button class="button parents" onclick="openForm('${parents}')">
+Parents Quiz
+</button>
+
+`;
+
+}
+
+else{
+
+msg.innerHTML="<b>Quiz Over</b>";
+
+timer.innerHTML="";
+
+buttons.innerHTML="";
+
+}
+
+}
+
+function showTimer(distance){
+
+const timer = document.getElementById("timer");
+
+const hours=Math.floor(distance/(1000*60*60));
+const minutes=Math.floor((distance%(1000*60*60))/(1000*60));
+const seconds=Math.floor((distance%(1000*60))/1000);
+
+timer.innerHTML=hours+"h "+minutes+"m "+seconds+"s";
+
+}
+
+setInterval(updatePage,1000);
+
+updatePage();
 
 </script>
 
